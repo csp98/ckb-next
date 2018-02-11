@@ -95,6 +95,8 @@ const char* product_str(short product){
         return "harpoon";
     if(product == P_GLAIVE)
         return "glaive";
+    if(product == P_DARK_CORE || product == P_DARK_CORE_WL)
+	return "darkcore";
     return "";
 }
 
