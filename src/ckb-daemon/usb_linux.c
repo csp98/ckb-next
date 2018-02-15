@@ -69,13 +69,15 @@ int os_usbsend(usbdevice* kb, const uchar* out_msg, int is_recv, const char* fil
     int res;
     if ((kb->fwversion >= 0x120 || IS_V2_OVERRIDE(kb)) && !is_recv){
         struct usbdevfs_bulktransfer transfer = {0};
-        // FW 2.XX uses 0x03, FW 3.XX uses 0x02
-        transfer.ep = (kb->fwversion >= 0x130 && kb->fwversion < 0x200) ? 4 : (kb->fwversion >= 0x300 ? 2 : 3);
+        // All firmware versions for normal HID devices have the OUT endpoint in the end.
+        // Devices with no input, such as the Polaris, have it in the start.
+        transfer.ep = (IS_SINGLE_EP(kb) ? kb->epcount - 1 : kb->epcount);
         transfer.len = MSG_SIZE;
         transfer.timeout = 5000;
         transfer.data = (void*)out_msg;
         res = ioctl(kb->handle - 1, USBDEVFS_BULK, &transfer);
     } else {
+        // Note, Ctrl Transfers require an index, not an endpoint, which is why kb->epcount - 1 works
         struct usbdevfs_ctrltransfer transfer = { 0x21, 0x09, 0x0200, kb->epcount - 1, MSG_SIZE, 5000, (void*)out_msg };
         res = ioctl(kb->handle - 1, USBDEVFS_CONTROL, &transfer);
     }
@@ -715,7 +717,9 @@ static _model models[] = {
     { P_SCIMITAR_STR, P_SCIMITAR },
     { P_SCIMITAR_PRO_STR, P_SCIMITAR_PRO },
     { P_SABRE_O2_STR, P_SABRE_O2 },
-    { P_HARPOON_STR, P_HARPOON }
+    { P_HARPOON_STR, P_HARPOON },
+    // Mousepads
+    { P_POLARIS_STR, P_POLARIS }
 };
 #define N_MODELS (sizeof(models) / sizeof(_model))
 

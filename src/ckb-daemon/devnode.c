@@ -265,8 +265,6 @@ static int _mkdevpath(usbdevice* kb){
                 fputs(" fwversion", ffile);
             if(HAS_FEATURES(kb, FEAT_FWUPDATE))
                 fputs(" fwupdate", ffile);
-            if(HAS_FEATURES(kb, FEAT_HWLOAD))
-                fputs(" hwload", ffile);
             fputc('\n', ffile);
             fclose(ffile);
             chmod(fpath, S_GID_READ);
